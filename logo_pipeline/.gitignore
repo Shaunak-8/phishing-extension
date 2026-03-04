@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+env/
+venv/
+venv*/
+ENV/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual envs
+.venv/
+.venv2/
+
+# IDEs
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Node / web build
+node_modules/
+dist/
+build/
+
+# Chrome extension artifacts
+*.crx
+
+# Logs
+*.log
+
+# Model artifacts / heavy files (do not commit - add to release instead)
+*.pkl
+*.h5
+*.pb
+*.pt
+logo_embs.npy
+logo_db_embeddings.json
+
+# dotenv
+.env

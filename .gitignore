@@ -1,0 +1,22 @@
+# Mac
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+venv/
+venv2_clean/
+
+# Dataset & large files
+logo_pipeline/data/raw_all/
+logo_pipeline/data/raw_test/
+logo_pipeline/data/batches/
+logo_pipeline/data/raw_sample100/
+
+# screenshots & favicon dumps
+*.png
+*.ico
+*.jpeg
