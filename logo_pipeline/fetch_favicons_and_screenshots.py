@@ -52,7 +52,7 @@ def fetch_favicon(url, out_dir):
                         f.write(r.content)
                     print(f"Saved favicon: {out_path}")
                     return True
-            except:
+            except requests.RequestException:
                 continue
 
         print(f"No favicon found for {url}")

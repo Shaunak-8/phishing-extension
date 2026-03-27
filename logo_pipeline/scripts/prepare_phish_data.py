@@ -6,7 +6,16 @@ from urllib.parse import urlparse
 
 os.makedirs("data/processed", exist_ok=True)
 
-def normalize_url(u):
+def normalize_url(u: str) -> str:
+    """
+    Normalize a URL by removing default ports and converting to lowercase.
+    
+    Args:
+    u (str): The URL to normalize.
+    
+    Returns:
+    str: The normalized URL or None if the input is empty.
+    """
     u = str(u).strip()
     if not u:
         return None
@@ -25,7 +34,16 @@ def normalize_url(u):
     except Exception:
         return None
 
-def extract_from_urlhaus(path):
+def extract_from_urlhaus(path: str) -> list:
+    """
+    Extract URLs from a URLhaus CSV file.
+    
+    Args:
+    path (str): The path to the URLhaus CSV file.
+    
+    Returns:
+    list: A list of extracted URLs.
+    """
     import pandas as pd
     import os
 
@@ -66,7 +84,16 @@ def extract_from_urlhaus(path):
     print("Extracted", len(urls), "URLhaus URLs")
     return urls
 
-def extract_from_custom_csv(path):
+def extract_from_custom_csv(path: str) -> list:
+    """
+    Extract URLs from a custom CSV file.
+    
+    Args:
+    path (str): The path to the custom CSV file.
+    
+    Returns:
+    list: A list of extracted URLs.
+    """
     if not os.path.exists(path):
         return []
     df = pd.read_csv(path, low_memory=False)
@@ -79,7 +106,16 @@ def extract_from_custom_csv(path):
     else:
         return df.iloc[:,0].dropna().astype(str).tolist()
 
-def load_benign(path="data/feeds/benign.txt"):
+def load_benign(path: str = "data/feeds/benign.txt") -> list:
+    """
+    Load benign URLs from a text file.
+    
+    Args:
+    path (str): The path to the benign text file.
+    
+    Returns:
+    list: A list of loaded benign URLs.
+    """
     if not os.path.exists(path):
         return []
     with open(path,"r",encoding="utf-8") as f:
@@ -93,7 +129,10 @@ def load_benign(path="data/feeds/benign.txt"):
             urls.append("http://" + d)
     return urls
 
-def main():
+def main() -> None:
+    """
+    The main function.
+    """
     print("Loading URLhaus...")
     phish_urls = extract_from_urlhaus("data/feeds/urlhaus_recent.csv")
     print("Found", len(phish_urls), "raw URLhaus entries")

@@ -16,7 +16,8 @@ import sys
 import re
 from urllib.parse import urlparse
 
-def normalize_url(u):
+def normalize_url(u: str) -> str:
+    """Normalize a URL by ensuring scheme and removing fragment."""
     u = u.strip()
     if not u:
         return None
@@ -31,21 +32,24 @@ def normalize_url(u):
     except Exception as e:
         return None
 
-def read_local_file(path):
+def read_local_file(path: str) -> list:
+    """Read URLs from a local file."""
     urls = []
     with open(path, 'r', encoding='utf-8', errors='ignore') as f:
         for line in f:
-            line=line.strip()
-            if not line: continue
+            line = line.strip()
+            if not line: 
+                continue
             # allow CSV with URL,label
-            if ',' in line and line.count(',')==1 and line.split(',')[1].strip() in ('0','1','phish','legit'):
-                u,lab = line.split(',',1)
+            if ',' in line and line.count(',') == 1 and line.split(',')[1].strip() in ('0','1','phish','legit'):
+                u, lab = line.split(',',1)
                 urls.append((normalize_url(u), lab.strip()))
             else:
                 urls.append((normalize_url(line), None))
     return urls
 
-def write_csv(rows, out):
+def write_csv(rows: list, out: str) -> None:
+    """Write URLs to a CSV file."""
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, 'w', newline='', encoding='utf-8') as f:
         w = csv.writer(f)
@@ -53,7 +57,8 @@ def write_csv(rows, out):
         for url, label, src in rows:
             w.writerow([url, label if label is not None else '', src])
 
-def main():
+def main() -> None:
+    """Main function."""
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', nargs='*', help='local files containing URLs (one per line)')
     parser.add_argument('--output', default='data/urls_labels_expanded.csv')
@@ -80,9 +85,11 @@ def main():
     # Normalize and dedupe by URL
     seen = set()
     rows = []
-    for url,label,src in collected:
-        if not url: continue
-        if url in seen: continue
+    for url, label, src in collected:
+        if not url: 
+            continue
+        if url in seen: 
+            continue
         seen.add(url)
         rows.append((url, label, src))
 

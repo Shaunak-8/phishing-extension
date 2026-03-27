@@ -3,7 +3,10 @@
 # Usage: python server_logo.py
 # Requires: flask, pillow, numpy, tensorflow
 
-import json, os, io, numpy as np
+import json
+import os
+import io
+import numpy as np
 from PIL import Image
 from flask import Flask, request, jsonify
 from tensorflow.keras.applications import MobileNetV2
@@ -11,7 +14,7 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
 
 # Config
-EMBEDDING_DIM = 1280   # MobileNetV2 pooling='avg' -> 1280
+EMBEDDING_DIM = 1280  # MobileNetV2 pooling='avg' -> 1280
 LOGO_DB_PATH = "logo_db_embeddings.json"
 TOP_K = 5
 
@@ -19,6 +22,7 @@ app = Flask(__name__)
 
 # Load precomputed logo DB (brand -> {'embedding': [...], 'count': N})
 def load_logo_db(path=LOGO_DB_PATH):
+    """Load precomputed logo DB from JSON file."""
     if not os.path.exists(path):
         raise FileNotFoundError(f"Logo DB not found at {path}")
     with open(path, "r", encoding="utf-8") as f:
@@ -41,12 +45,14 @@ def load_logo_db(path=LOGO_DB_PATH):
 
 # Build MobileNetV2 embedding model
 def build_embedding_model():
-    base = MobileNetV2(weights="imagenet", include_top=False, pooling="avg", input_shape=(224,224,3))
+    """Build MobileNetV2 model for image embedding."""
+    base = MobileNetV2(weights="imagenet", include_top=False, pooling="avg", input_shape=(224, 224, 3))
     return base
 
 # Compute embedding from PIL image
 def image_to_embedding(pil_img, model):
-    img = pil_img.convert("RGB").resize((224,224))
+    """Compute image embedding using MobileNetV2 model."""
+    img = pil_img.convert("RGB").resize((224, 224))
     arr = img_to_array(img)
     arr = np.expand_dims(arr, axis=0)
     arr = preprocess_input(arr)  # MobileNetV2 preprocessing
@@ -60,6 +66,7 @@ def image_to_embedding(pil_img, model):
 
 # Cosine similarity search (emb_db normalized, query normalized)
 def top_k_similar(query_emb, emb_db, brands, k=TOP_K):
+    """Find top-k similar logos using cosine similarity."""
     # emb_db shape (N, D); both normalized -> dot product is cosine
     scores = np.dot(emb_db, query_emb)
     idxs = np.argsort(-scores)[:k]
@@ -92,7 +99,7 @@ def predict_logo():
             data = request.get_json(silent=True) or {}
             b64 = data.get("image_base64")
             if not b64:
-                return jsonify({"error":"no image provided (send multipart form 'image' or JSON image_base64)"}), 400
+                return jsonify({"error": "no image provided (send multipart form 'image' or JSON image_base64)"}), 400
             import base64
             img_bytes = base64.b64decode(b64)
             img = Image.open(io.BytesIO(img_bytes))
@@ -108,7 +115,7 @@ def predict_logo():
     # ensure query normalized
     qnorm = np.linalg.norm(q_emb)
     if qnorm == 0:
-        return jsonify({"error":"zero embedding"}), 500
+        return jsonify({"error": "zero embedding"}), 500
     q_emb = q_emb / qnorm
 
     results = top_k_similar(q_emb, emb_matrix, brands_list, k=TOP_K)

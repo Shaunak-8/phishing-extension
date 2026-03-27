@@ -15,6 +15,7 @@ import subprocess
 from urllib.parse import urlparse
 
 def domain_from_url(u):
+    """Extract domain from URL."""
     try:
         p = urlparse(u if u.startswith("http") else "http://" + u)
         host = p.netloc
@@ -25,6 +26,7 @@ def domain_from_url(u):
         return None
 
 def ensure_temp_csv(tmp_csv_path, header=("url",)):
+    """Ensure temp CSV exists with header."""
     # write header if not exists
     if not os.path.exists(tmp_csv_path):
         with open(tmp_csv_path, "w", newline="", encoding="utf-8") as f:
@@ -32,11 +34,13 @@ def ensure_temp_csv(tmp_csv_path, header=("url",)):
             writer.writerow(header)
 
 def append_url_to_csv(tmp_csv_path, url):
+    """Append URL to temp CSV."""
     with open(tmp_csv_path, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow([url])
 
 def run_fetch_once(fetch_script, tmp_csv, outdir, screenshots):
+    """Run fetch script once."""
     cmd = [sys.executable, fetch_script, "--input", tmp_csv, "--outdir", outdir]
     if screenshots:
         cmd.append("--screenshots")
@@ -48,6 +52,7 @@ def run_fetch_once(fetch_script, tmp_csv, outdir, screenshots):
         return 2, f"timeout: {e}"
 
 def main():
+    """Main function."""
     p = argparse.ArgumentParser()
     p.add_argument("--batch", required=True, help="path to batch csv (url,label)")
     p.add_argument("--outdir", required=True, help="output directory root for fetched sites")

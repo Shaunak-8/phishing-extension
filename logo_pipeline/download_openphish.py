@@ -14,7 +14,10 @@ Usage:
 
 If you want to run it on a schedule, call this script from cron or GitHub Actions.
 """
-import requests, os, csv, sys
+import requests
+import os
+import csv
+import sys
 from urllib.parse import urlparse
 import pandas as pd
 
@@ -24,7 +27,8 @@ RAW_PATH = os.path.join(OUT_DIR, "openphish.txt")
 CLEAN_PATH = os.path.join(OUT_DIR, "openphish_clean.csv")
 MERGED_PATH = os.path.join(OUT_DIR, "urls_labels_expanded.csv")  # existing aggregated file
 
-def normalize_url(u):
+def normalize_url(u: str) -> str:
+    """Normalize a URL to its canonical form."""
     if not isinstance(u, str):
         return None
     u = u.strip()
@@ -43,7 +47,8 @@ def normalize_url(u):
     except Exception:
         return None
 
-def download_feed(url, out_raw):
+def download_feed(url: str, out_raw: str) -> str:
+    """Download the OpenPhish feed and save it to a file."""
     print("Downloading OpenPhish feed...")
     r = requests.get(url, timeout=30)
     r.raise_for_status()
@@ -53,12 +58,13 @@ def download_feed(url, out_raw):
     print("Saved raw feed to", out_raw)
     return out_raw
 
-def clean_and_save(raw_path, clean_csv_path):
+def clean_and_save(raw_path: str, clean_csv_path: str) -> str:
+    """Clean the feed and write it to a CSV file."""
     print("Cleaning feed and writing CSV:", clean_csv_path)
     urls = []
     with open(raw_path, "r", encoding="utf-8", errors="ignore") as f:
         for line in f:
-            line=line.strip()
+            line = line.strip()
             if not line:
                 continue
             norm = normalize_url(line)
@@ -68,7 +74,8 @@ def clean_and_save(raw_path, clean_csv_path):
     seen = set()
     out_rows = []
     for u in urls:
-        if u in seen: continue
+        if u in seen:
+            continue
         seen.add(u)
         out_rows.append({"url": u})
     # write CSV
@@ -80,7 +87,8 @@ def clean_and_save(raw_path, clean_csv_path):
     print("Saved", len(out_rows), "unique URLs to", clean_csv_path)
     return clean_csv_path
 
-def merge_into_master(clean_csv, master_csv):
+def merge_into_master(clean_csv: str, master_csv: str) -> None:
+    """Merge the clean feed into the master CSV file."""
     # Load clean feed
     df_new = pd.read_csv(clean_csv)
     df_new["label"] = "phish"
@@ -94,7 +102,7 @@ def merge_into_master(clean_csv, master_csv):
             print("ERROR: master file exists but has no 'url' column:", master_csv)
             return
         # mark existing urls to keep their labels (prefer existing labels)
-        df_master = df_master[["url"] + [c for c in df_master.columns if c!="url"]]
+        df_master = df_master[["url"] + [c for c in df_master.columns if c != "url"]]
         # concat and drop duplicates keeping first (master first so existing label preserved)
         df_combined = pd.concat([df_master, df_new], ignore_index=True)
         df_combined = df_combined.drop_duplicates(subset=["url"], keep="first").reset_index(drop=True)
@@ -105,7 +113,8 @@ def merge_into_master(clean_csv, master_csv):
         df_new.to_csv(master_csv, index=False)
         print("Master created. Total rows:", len(df_new))
 
-def main():
+def main() -> None:
+    """Main function."""
     try:
         raw = download_feed(OPENPHISH_URL, RAW_PATH)
         clean = clean_and_save(raw, CLEAN_PATH)
