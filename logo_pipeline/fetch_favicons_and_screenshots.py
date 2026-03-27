@@ -9,7 +9,7 @@ import asyncio
 
 from playwright.async_api import async_playwright
 
-async def fetch_screenshot(url, out_path):
+async def fetch_screenshot(url: str, out_path: str) -> bool:
     try:
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
@@ -29,7 +29,7 @@ async def fetch_screenshot(url, out_path):
         return False
 
 
-def fetch_favicon(url, out_dir):
+def fetch_favicon(url: str, out_dir: str) -> bool:
     try:
         parsed = urlparse(url)
         base = f"{parsed.scheme}://{parsed.netloc}"
@@ -52,7 +52,7 @@ def fetch_favicon(url, out_dir):
                         f.write(r.content)
                     print(f"Saved favicon: {out_path}")
                     return True
-            except:
+            except requests.RequestException:
                 continue
 
         print(f"No favicon found for {url}")
@@ -73,7 +73,7 @@ async def main(args):
         os.makedirs(out_dir, exist_ok=True)
 
         # Fetch favicon
-        fetch_favicon(url, out_dir)
+        await asyncio.to_thread(fetch_favicon, url, out_dir)
 
         # Fetch screenshot (if flag enabled)
         if args.screenshots:
